@@ -223,19 +223,26 @@ def show_level_menu():
         screen.fill(BLACK)
         screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
+        if start_index > 0:
+            up_arrow = font.render("↑", True, WHITE)
+            up_arrow_rect = up_arrow.get_rect(center=(SCREEN_WIDTH // 2, 100))
+            screen.blit(up_arrow, up_arrow_rect)
+        else:
+            up_arrow_rect = None
+
         level_buttons = []
         for i in range(start_index, min(start_index + visible_levels, len(levels))):
             level_text = font.render(f"Уровень {i + 1}", True, WHITE)
-            level_rect = level_text.get_rect(center=(SCREEN_WIDTH // 2, 120 + (i - start_index) * 50))
+            level_rect = level_text.get_rect(center=(SCREEN_WIDTH // 2, 140 + (i - start_index) * 50))
             screen.blit(level_text, level_rect)
             level_buttons.append((level_rect, i))
 
-        if start_index > 0:
-            up_arrow = font.render("↑", True, WHITE)
-            screen.blit(up_arrow, (SCREEN_WIDTH // 2 - up_arrow.get_width() // 2, 80))
         if start_index + visible_levels < len(levels):
             down_arrow = font.render("↓", True, WHITE)
-            screen.blit(down_arrow, (SCREEN_WIDTH // 2 - down_arrow.get_width() // 2, 120 + visible_levels * 50))
+            down_arrow_rect = down_arrow.get_rect(center=(SCREEN_WIDTH // 2, 140 + visible_levels * 50))
+            screen.blit(down_arrow, down_arrow_rect)
+        else:
+            down_arrow_rect = None
 
         pygame.display.flip()
 
@@ -250,6 +257,10 @@ def show_level_menu():
                     start_index += 1
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    if up_arrow_rect and up_arrow_rect.collidepoint(event.pos):
+                        start_index -= 1
+                    elif down_arrow_rect and down_arrow_rect.collidepoint(event.pos):
+                        start_index += 1
                     for button, index in level_buttons:
                         if button.collidepoint(event.pos):
                             return index
