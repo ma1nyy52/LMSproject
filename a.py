@@ -2,7 +2,6 @@ import pygame
 import os
 import sys
 
-# Функция для загрузки изображений
 def load_image(name, colorkey=None):
     if not os.path.isfile(name):
         print(f"Файл с изображением '{name}' не найден")
@@ -11,6 +10,7 @@ def load_image(name, colorkey=None):
     return image
 
 pygame.init()
+pygame.mixer.init()
 
 # Константы
 TILE_SIZE = 50
@@ -27,9 +27,10 @@ BROWN = (139, 69, 19)
 GREEN = (0, 128, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
-BLUE = (0, 0, 255)  # Цвет для кнопки
-PURPLE = (128, 0, 128)  # Цвет для двери
+BLUE = (0, 0, 255)
+PURPLE = (128, 0, 128)
 
+# Загрузка изображений
 player_img = load_image("player.png")
 box_img = load_image("box.png")
 wall_img = load_image("brick.png")
@@ -71,6 +72,18 @@ levels = [
         [1, 1, 3, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ],
+
+    [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        [1, 0, 2, 5, 1, 0, 2, 0, 3, 1],
+        [1, 0, 0, 0, 0, 4, 0, 2, 0, 1],
+        [1, 0, 6, 0, 1, 0, 0, 0, 0, 1],
+        [1, 1, 3, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+,
     [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -210,6 +223,7 @@ def show_loading_screen():
     pygame.display.flip()
     pygame.time.wait(2000)
 
+# Функция для отображения меню выбора уровня
 def show_level_menu():
     screen.fill(BLACK)
     font = pygame.font.Font(None, 40)
@@ -223,6 +237,7 @@ def show_level_menu():
         screen.fill(BLACK)
         screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
+        # Отрисовка стрелки вверх, если есть уровни выше
         if start_index > 0:
             up_arrow = font.render("↑", True, WHITE)
             up_arrow_rect = up_arrow.get_rect(center=(SCREEN_WIDTH // 2, 100))
@@ -230,6 +245,7 @@ def show_level_menu():
         else:
             up_arrow_rect = None
 
+        # Отрисовка уровней
         level_buttons = []
         for i in range(start_index, min(start_index + visible_levels, len(levels))):
             level_text = font.render(f"Уровень {i + 1}", True, WHITE)
@@ -237,6 +253,7 @@ def show_level_menu():
             screen.blit(level_text, level_rect)
             level_buttons.append((level_rect, i))
 
+        # Отрисовка стрелки вниз, если есть уровни ниже
         if start_index + visible_levels < len(levels):
             down_arrow = font.render("↓", True, WHITE)
             down_arrow_rect = down_arrow.get_rect(center=(SCREEN_WIDTH // 2, 140 + visible_levels * 50))
@@ -251,19 +268,27 @@ def show_level_menu():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEWHEEL:
+                # Прокрутка колесиком мыши
                 if event.y > 0 and start_index > 0:
                     start_index -= 1
                 elif event.y < 0 and start_index + visible_levels < len(levels):
                     start_index += 1
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                if event.button == 1:  # ЛКМ
+                    # Проверка, нажата ли стрелка вверх
                     if up_arrow_rect and up_arrow_rect.collidepoint(event.pos):
                         start_index -= 1
+                    # Проверка, нажата ли стрелка вниз
                     elif down_arrow_rect and down_arrow_rect.collidepoint(event.pos):
                         start_index += 1
+                    # Проверка, выбран ли уровень
                     for button, index in level_buttons:
                         if button.collidepoint(event.pos):
                             return index
+
+#Загрузка и воспроизведение музыки для меню
+pygame.mixer.music.load("menu_music.mp3")
+pygame.mixer.music.play(-1)  # Бесконечное воспроизведение
 
 # Основной игровой цикл
 running = True
@@ -271,6 +296,11 @@ show_loading_screen()
 current_level_index = show_level_menu()
 current_level = levels[current_level_index]
 player_pos, boxes, goals = load_level()
+
+# Смена музыки на игровую
+pygame.mixer.music.stop()
+pygame.mixer.music.load("game_music.mp3")
+pygame.mixer.music.play(-1)
 
 while running:
     for event in pygame.event.get():
@@ -322,4 +352,6 @@ while running:
 
     clock.tick(FPS)
 
+# Остановка музыки при выходе из игры
+pygame.mixer.music.stop()
 pygame.quit()
