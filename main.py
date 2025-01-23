@@ -15,7 +15,7 @@ pygame.init()
 
 # Загрузка музыки
 def load_music():
-    pygame.mixer.music.load(os.path.join('data', 'background_music.mp3'))  # Замените на имя вашего файла
+    pygame.mixer.music.load(os.path.join('data', 'game_music.mp3'))  # Замените на имя вашего файла
     pygame.mixer.music.play(-1)  # Воспроизводить в бесконечном цикле
 
 # Константы
